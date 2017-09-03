@@ -1,15 +1,7 @@
-// Agent participant in project tp_cnp
-
-/* Initial beliefs and rules */
-
-/* Initial goals */
-
 !start.
 
-/* Plans */
-
 +!start : true <- 
-	.print("hello world.").
+	.print("hello, I am here!").
 	
-+!sendProposals : true <-
-	.send(initiator,tell,newProposal(1)).
++!sendProposals[source(X)]: true <-
+	.send(X,tell,newProposal(1)).
