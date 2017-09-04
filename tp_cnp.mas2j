@@ -15,7 +15,7 @@ MAS tp_cnp {
 	infrastructure: Centralised
 
 	agents:
-		i1 initiator;
+		i1 initiator agentArchClass Initiator;
 		i2 initiator;
 		i3 initiator;
 		i4 initiator;

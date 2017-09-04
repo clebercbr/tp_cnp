@@ -22,6 +22,7 @@ margin(2).
 		.nth(0,Item,Name);
 		.nth(1,Item,Price);
 		.print("Product(",Sz,"): ",Name," base price $",Price, " calculating offer...");
+		//.string.format("%.2f", Price); .format2decimals(Price,X)
 		.send(X,tell,newProposal(Name,Y*Z+Price));
 		-+listSize(Sz+1);
 		.wait(1000);
