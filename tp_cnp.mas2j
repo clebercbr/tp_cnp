@@ -24,7 +24,9 @@ MAS tp_cnp {
 		p1 participant;
 		p2 participant; 
 		p3 participant;
+        test;
 
 	aslSourcePath:
 		"src/asl";
+
 }

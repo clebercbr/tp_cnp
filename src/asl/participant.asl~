@@ -1,15 +1,18 @@
-// Agent participant in project tp_cnp
-
-/* Initial beliefs and rules */
-
-/* Initial goals */
+products([[001,"Banana",1],
+		  [002,"Apple",2],
+		  [003,"Pinapple"],2.5]).
+margin(2).
 
 !start.
 
-/* Plans */
 
 +!start : true <- 
-	.print("hello world.").
+	.print("hello, I am here!").
 	
-+!sendProposals : true <-
-	.send(initiator,tell,newProposal(1)).
++!sendProposals[source(X)] : true <-
+	.random(Y);
+	for ( products(A,B,C) ) {
+        .print(A," / ",B, " / ",C);     // print all values of X
+    }
+    //margin(Z);
+	.send(X,tell,newProposal("Banana",Y*2+1)).

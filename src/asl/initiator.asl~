@@ -1,18 +1,11 @@
-// Agent sample_agent in project tp_cnp
-
-
-
-/* Initial beliefs and rules */
-
-/* Initial goals */
-
 !start.
 
-/* Plans */
-
 +!start : true <- 
-	.print("hello world.");
+	.print("Please, send your groceries products proposals.");
 	.broadcast(achieve,sendProposals).
 	
-+newProposal(X) : true <-
-	.print("Proposal ",X ," received!").
++newProposal(X,Y) : true <-
+	.print("Proposal for product ",X ," received with price $", Y).
+	
+//Failure event since initiator uses broadcasting
++!sendProposals: true.
