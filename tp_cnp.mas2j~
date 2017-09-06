@@ -15,16 +15,11 @@ MAS tp_cnp {
 	infrastructure: Centralised
 
 	agents:
-		i1 initiator;
-		i2 initiator;
-		i3 initiator;
-		i4 initiator;
-		i5 initiator;
-		i6 initiator;
-		p1 participant;
-		p2 participant; 
-		p3 participant;
+		//i initiator #6;// agentArchClass Initiator;
+		p participant #3;
+        test;
 
 	aslSourcePath:
 		"src/asl";
+
 }
