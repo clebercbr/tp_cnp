@@ -17,7 +17,8 @@ margin(2).
 		.random(Y);
 		.nth(0,Item,Name);
 		.nth(1,Item,Price);
+		tp_cnp.formatCurrency(Y*Z+Price,PPrice);
 		.print("Product: ",Name," base price $",Price, " calculating offer...",PPrice);
-		.send(X,tell,newProposal(Name,Y*Z+Price));
+		.send(X,tell,newProposal(Name,PPrice));
 	}.
 

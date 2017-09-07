@@ -4,6 +4,7 @@ products([
 		["Pinapple",2.5555]
 		]).
 !start.
+!test.
 
 +!start : products(List) <-
 	.length(List,LLenght);
@@ -13,13 +14,11 @@ products([
 		.nth(Sz,List,Item);
 		.nth(0,Item,Name);
 		.nth(1,Item,Price);
-		.print("Product(",Sz,"): ",Name," $",Price);
+		tp_cnp.formatCurrency(Price,PPrice);
+		.print("Product(",Sz,"): ",Name," $",PPrice);
 		-+listSize(Sz+1);
-    };
-	for (.member(Item,List)){
-		.formatCurrency(Price,PPrice);
-		//iactions.formatCurrency(Price,PPrice);
-		//iactions.formatCurrency(Price,PPrice);
-		.print("Product: ",Name," base price $",Price, " calculating offer...",PPrice);
-	}.
+    }.
 
++!test : true <-
+	tp_cnp.formatCurrency(3.66667,Price);
+	.print("$",Price).
