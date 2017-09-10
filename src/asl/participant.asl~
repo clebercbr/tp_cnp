@@ -16,25 +16,9 @@ margin(2).
 	for (.member(Item,List)){
 		.random(Y);
 		.nth(0,Item,Name);
-		.nth(1,Item,Price);
-		.format.formatCurrency(Price,PPrice);
-		
-		.print("Product: ",Name," base price $",Price, " calculating offer...",PPrice);
-		.send(X,tell,newProposal(Name,Y*Z+Price));
+		.nth(1,Item,PPrice);
+		//tp_cnp.formatCurrency(Y*Z+Price,PPrice);
+		.print("Product: ",Name," base price $",PPrice, " calculating offer...",PPrice);
+		//.send(X,tell,newProposal(Name,PPrice));
 	}.
-	/*
-	.length(List,LLenght);
-	-+listSize(0);
-	while(listSize(Sz) & Sz < LLenght)
-	{        
-		.random(Y);
-		.nth(Sz,List,Item);
-		.nth(0,Item,Name);
-		.nth(1,Item,Price);
-		.print("Product(",Sz,"): ",Name," base price $",Price, " calculating offer...");
-		//.string.format("%.2f", Price); .format2decimals(Price,X)
-		.send(X,tell,newProposal(Name,Y*Z+Price));
-		-+listSize(Sz+1);
-		.wait(1000);
-    }.*/
 

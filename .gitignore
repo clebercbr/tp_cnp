@@ -1,0 +1,3 @@
+*.ma2j~
+src/asl/*.asl~
+bin/classes/*
