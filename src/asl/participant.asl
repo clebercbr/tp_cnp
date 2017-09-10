@@ -23,3 +23,8 @@ margin(2).
 		.send(X,tell,newProposal(Name,PPrice));
 	}.
 
++accepted(Product,Price) : true <-
+	.print("Accepted: ",Product,"  $",Price).
+
++rejected(Product,Price) :true <-
+	.print("Rejected: ",Product,"  $",Price).

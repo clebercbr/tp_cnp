@@ -11,6 +11,39 @@ proposals([
 
 +!test : true <-
     ?proposals(List);
+	.print("Proposals: ",List);
+	.length(List,LLenght);
+	-+listSize(0);
+	-+bestOffer("","",0);
+	while(listSize(Sz) & Sz < LLenght)
+	{        
+		.nth(Sz,List,Item);
+		.nth(0,Item,Supplier);
+		.nth(1,Item,ProductName);
+		.nth(2,Item,Price);
+		if (ProductName = "Pinapple"){
+			if (bestOffer(X,Y,Z)) {
+				if (Y > Price)
+				{
+					-+bestOffer(Supplier,Price,Qt+1);
+					-+svshsbasma(X,Y);
+					?listTs2(LN);
+					.concat(LN,[[Supplier,Price]],K);
+					-+listTs2(K);
+				};
+			} else {
+				-+bestOffer(Supplier,Price);
+				?listTst(LN);
+				.concat(LN,[[Supplier,Price]],K);
+				-+listTst(K);
+			};
+		};
+		-+listSize(Sz+1);
+    }.
+
+
+/*
+    ?proposals(List);
 	.length(List,LLenght);
 	-+listSize(0);
 	-+bestOffer("","",0);
@@ -34,26 +67,4 @@ proposals([
 		};
 		-+listSize(Sz+1);
     }.
-	
-/*
-
-		if (ProductName = "Pinapple"){
-			if (bestOffer(X,Y,Z)) {
-				if (Y > Price)
-				{
-					-+bestOffer(Supplier,Price,Qt+1);
-					-+svshsbasma(X,Y);
-					?listTs2(LN);
-					.concat(LN,[[Supplier,Price]],K);
-					-+listTs2(K);
-				};
-			} else {
-				-+bestOffer(Supplier,Price);
-				?listTst(LN);
-				.concat(LN,[[Supplier,Price]],K);
-				-+listTst(K);
-			};
-		};
-		-+listSize(Sz+1);
-
-*/
+	 */

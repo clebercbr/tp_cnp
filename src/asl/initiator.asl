@@ -1,4 +1,5 @@
 proposals([]).//proposals(_).
+newLP([]).
 !start.
 
 //Start broadcasting to participants send their offers
@@ -7,19 +8,19 @@ proposals([]).//proposals(_).
 	.broadcast(achieve,sendProposals).
 	
 //A proposal was received
-+newProposal(Product,Price)[source(Supplier)] : true <-
-	.print("Proposal received from ",Supplier,", product ",Product ," price $", Price);
+@p1[atomic] +newProposal(Product,Price)[source(Supplier)] : true <-
+	.print("Proposal received from ",Supplier,": product ''",Product ,"'' price $", Price);
 	?proposals(ListProposals);
-	.print("List: ",ListProposals);
-	.concat(ListProposals,[[Supplier,Product,Price]],newLP);
-	-+proposals(newLP);
+	.concat(ListProposals,[[Supplier,Product,Price]],NewLP);
+	-+proposals(NewLP);
+	.print("List: ",NewLP);
 	-+checkProposals(Product);
 	?bestOffer(SSupplier,PPrice,QtOffers);
 	if (QtOffers >= 3) {
 		if (SSupplier = Supplier) {
-			.send(Supplier,tell,accepted(Product,Offer));
+			.send(Supplier,tell,accepted(Product,Price));
 		} else {
-			.send(Supplier,tell,reject(Product,Offer));
+			.send(Supplier,tell,rejected(Product,Price));
 		}
 	}.
 
@@ -33,9 +34,10 @@ proposals([]).//proposals(_).
 	{        
 		.nth(Sz,List,Item);
 		.nth(0,Item,Supplier);
-		.nth(1,Item,ProductName);
+		.nth(1,Item,Product);
 		.nth(2,Item,Price);
-		if (ProductName = "Pineapple"){
+		.print("Checking proposal from ",Supplier,": product ''",Product ,"'' price $", Price);
+		if (Product = ProductName){
 			?bestOffer(X,Y,Z);
 			if (Z > 0) {
 				-+bestOffer(X,Y,Z+1);
