@@ -11,14 +11,22 @@ margin(2).
 	.print("hello, I am here!").
 	
 //Submit proposal plan, sends to the initiator my product offers
-+!sendProposals[source(X)] : products(List) <-
++!sendProposals(RequestedItem)[source(X)] : true <-
+	?products(List);
     ?margin(Z);
 	for (.member(Item,List)){
 		.random(Y);
 		.nth(0,Item,Name);
-		.nth(1,Item,PPrice);
-		//tp_cnp.formatCurrency(Y*Z+Price,PPrice);
-		.print("Product: ",Name," base price $",PPrice, " calculating offer...",PPrice);
-		//.send(X,tell,newProposal(Name,PPrice));
+		.nth(1,Item,Price);
+		if (RequestedItem = Name ){
+			tp_cnp.formatCurrency(Y*Z+Price,PPrice);
+			.print("Product: ",Name," base price $",Price, " sale price $",PPrice);
+			.send(X,tell,newProposal(Name,PPrice));
+		}
 	}.
 
++accepted(Product,Price) : true <-
+	.print("Accepted: ",Product,"  $",Price).
+
++rejected(Product,Price) :true <-
+	.print("Rejected: ",Product,"  $",Price).
