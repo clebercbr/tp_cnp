@@ -20,7 +20,7 @@ margin(2).
 		.nth(1,Item,Price);
 		if (RequestedItem = Name ){
 			tp_cnp.formatCurrency(Y*Z+Price,PPrice);
-			.print("Product: ",Name," base price $",Price, " sale price $",PPrice);
+			.print("Product: ",Name," base price $",Price, " sales price $",PPrice);
 			.send(X,tell,newProposal(Name,PPrice));
 		}
 	}.

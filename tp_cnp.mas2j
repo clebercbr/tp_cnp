@@ -15,8 +15,8 @@ MAS tp_cnp {
 	infrastructure: Centralised
 
 	agents:
-		i initiator #1 agentArchClass tp_cnp.Initiator;
-		p participant #3;
+		i initiator #3;// agentArchClass tp_cnp.Initiator;
+		p participant #10;
         //test;
 
 	aslSourcePath:

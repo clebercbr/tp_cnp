@@ -1,5 +1,5 @@
 proposals([]).//proposals(_).
-desiredProducts(["Banana","Apple"]).
+desiredProducts(["Banana"/*,"Apple"*/]).
 !askForProposals.
 
 //Start broadcasting to participants send their offers
