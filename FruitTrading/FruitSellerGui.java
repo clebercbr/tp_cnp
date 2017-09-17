@@ -8,7 +8,7 @@ import javax.swing.*;
 
 
 class FruitSellerGui extends JFrame {	
-	private FruitsSellerAgent myAgent;
+	private FruitSellerAgent myAgent;
 	
 	private JTextField titleField, priceField;
 	
