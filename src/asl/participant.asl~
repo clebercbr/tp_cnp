@@ -25,8 +25,8 @@ margin(2).
 		}
 	}.
 
-+accepted(Product,Price) : true <-
-	.print("Accepted: ",Product,"  $",Price).
++accepted(Product,Price)[source(X)] : true <-
+	.print("Accepted by ",X,": ",Product,"  $",Price).
 
-+rejected(Product,Price) :true <-
-	.print("Rejected: ",Product,"  $",Price).
++rejected(Product,Price)[source(X)] :true <-
+	.print("Rejected by ",X,": ",Product,"  $",Price).
