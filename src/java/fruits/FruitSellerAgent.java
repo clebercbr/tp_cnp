@@ -12,6 +12,7 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import java.util.*;
 
 public class FruitSellerAgent extends Agent {
+	private static final long serialVersionUID = 1L;
 	// The catalogue of fruits for sale (maps the fruit to its price)
 	private Hashtable catalogue;
 	// The GUI by means of which the user can add fruits in the catalogue
@@ -67,6 +68,8 @@ public class FruitSellerAgent extends Agent {
 	 */
 	public void updateCatalogue(final String title, final int price) {
 		addBehaviour(new OneShotBehaviour() {
+			private static final long serialVersionUID = 1L;
+
 			public void action() {
 				catalogue.put(title, new Integer(price));
 				System.out.println(title+" inserted into catalogue. Price = "+price);
@@ -83,6 +86,8 @@ public class FruitSellerAgent extends Agent {
 	   sent back.
 	 */
 	private class OfferRequestsServer extends CyclicBehaviour {
+		private static final long serialVersionUID = 1L;
+
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
 			ACLMessage msg = myAgent.receive(mt);

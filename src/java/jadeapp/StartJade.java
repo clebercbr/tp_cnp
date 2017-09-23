@@ -1,3 +1,5 @@
+package jadeapp;
+
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
@@ -25,8 +27,13 @@ public class StartJade {
     }
     
     void createAgents() throws Exception {
-        for (int i=1; i<10; i++) {
-            AgentController ac = cc.createNewAgent("Buyer"+i, "fruits.FruitBuyerAgent", new Object[] { i });
+        for (int i=1; i<2; i++) {
+            Object args[] = new Object[] {"Banana", "Apple", "Guava", "Pineapple"};
+            AgentController ac = cc.createNewAgent("Buyer"+i, "fruits.FruitBuyerAgent", args);
+            ac.start();
+        }
+        for (int i=1; i<2; i++) {
+            AgentController ac = cc.createNewAgent("Seller"+i, "fruits.FruitSellerAgent", new Object[] { i });
             ac.start();
         }
     }

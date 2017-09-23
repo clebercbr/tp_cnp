@@ -1,12 +1,13 @@
 package fruits;
 
-import jade.core.AID;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
 
 class FruitSellerGui extends JFrame {	
+	private static final long serialVersionUID = 1L;
+
 	private FruitSellerAgent myAgent;
 	
 	private JTextField titleField, priceField;

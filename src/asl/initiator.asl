@@ -11,14 +11,14 @@ desiredProducts(["Banana","Apple","Guava","Pineapple"]).
 		.print("Asked for: '",Item,"'.");
 		.my_name(Me);
 		.concat("[",Me,"] Asked for: ",Item,C)
-		tp_cnp.writeOutputFile(C);
+		resources.writeOutputFile(C);
 	}.
 	
 //An expected proposal was received
 @np1 +propose(Product,Price)[source(Supplier)] : desiredProducts(LDP) & .sublist([Product],LDP) <-
 	.my_name(Me);
 	.concat("[",Me,"] Received(",Supplier,"): '",Product,"' $",Price,CC)
-	tp_cnp.writeOutputFile(CC);
+	resources.writeOutputFile(CC);
 	.print("Received (",Supplier,"): ''",Product ,"'' $", Price);
 	!deliberate(Product).
 
@@ -40,12 +40,12 @@ desiredProducts(["Banana","Apple","Guava","Pineapple"]).
 				.send(XSupplier,tell,acceptProposal(XProduct,XPrice));
 				.print("acceptProposal (",XSupplier,"): ''",XProduct ,"'' $", XPrice);
 				.concat("[",Me,"] acceptProposal(",XSupplier,"): ",XProduct," $",XPrice,CC)
-				tp_cnp.writeOutputFile(CC);
+				resources.writeOutputFile(CC);
 			} else { 
 				.send(XSupplier,tell,rejectProposal(XProduct,XPrice));
 				.print("rejectProposal (",XSupplier,"): ''",XProduct ,"'' $", XPrice);
 				.concat("[",Me,"] rejectProposal(",XSupplier,"): ",XProduct," $",XPrice,CC)
-				tp_cnp.writeOutputFile(CC);
+				resources.writeOutputFile(CC);
 			}
 			-propose(XProduct,XPrice)[source(XSupplier)];
 			-+listSize(Sz+1);
@@ -57,7 +57,7 @@ desiredProducts(["Banana","Apple","Guava","Pineapple"]).
 	.print("Refuse (",Supplier,"): ''",Product ,"''");
 	.my_name(Me);
 	.concat("[",Me,"] Refuse(",Supplier,"): '",Product,"'",CC);
-	tp_cnp.writeOutputFile(CC);
+	resources.writeOutputFile(CC);
 	!deliberate(Product).
 	
 //A participant informed the service is done

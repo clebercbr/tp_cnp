@@ -11,7 +11,7 @@ margin(2).
 			.nth(1,Item,Price);
 			if (Product == Name) {
 				.random(Y);
-				tp_cnp.formatCurrency(Y*Z+Price,PPrice);
+				resources.formatCurrency(Y*Z+Price,PPrice);
 				.send(X,tell,propose(Name,PPrice));
 			}
 		}

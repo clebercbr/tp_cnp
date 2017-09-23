@@ -1,4 +1,4 @@
-package tp_cnp;
+package resources;
 
 import jason.asSemantics.*;
 import jason.asSyntax.*;

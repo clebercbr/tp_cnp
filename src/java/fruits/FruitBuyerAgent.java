@@ -9,9 +9,9 @@ import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.core.behaviours.OneShotBehaviour;
 
 public class FruitBuyerAgent extends Agent {
+	private static final long serialVersionUID = 1L;
 	// The fruit to buy
 	private String targetFruitTitle;
 	// The list of known seller agents
@@ -31,6 +31,8 @@ public class FruitBuyerAgent extends Agent {
 
 			// Add a TickerBehaviour that schedules a request to seller agents every minute
 			addBehaviour(new TickerBehaviour(this, 6000) {
+				private static final long serialVersionUID = 1L;
+
 				protected void onTick() {
 					System.out.println("Trying to buy " + targetFruitTitle);
 					// Update the list of seller agents
@@ -75,6 +77,7 @@ public class FruitBuyerAgent extends Agent {
 	 * agents to request seller agents the target Fruit.
 	 */
 	private class RequestPerformer extends Behaviour {
+		private static final long serialVersionUID = 1L;
 		private AID bestSeller; // The agent who provides the best offer
 		private int bestPrice; // The best offered price
 		private int repliesCnt = 0; // The counter of replies from seller agents
