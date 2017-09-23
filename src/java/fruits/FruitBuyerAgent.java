@@ -26,36 +26,40 @@ public class FruitBuyerAgent extends Agent {
 		// Get the fruit to buy as a start-up argument
 		Object[] args = getArguments();
 		if (args != null && args.length > 0) {
-			targetFruitTitle = (String) args[0];
-			System.out.println("Target fruit is " + targetFruitTitle);
+			for (int i = 0; i < args.length; i++)
+			{
+				targetFruitTitle = (String) args[i];
+				System.out.println("Target fruit is " + targetFruitTitle);
 
-			// Add a TickerBehaviour that schedules a request to seller agents every minute
-			addBehaviour(new TickerBehaviour(this, 6000) {
-				private static final long serialVersionUID = 1L;
+				// Add a TickerBehaviour that schedules a request to seller agents every minute
+				addBehaviour(new TickerBehaviour(this, 6000) {
+					private static final long serialVersionUID = 1L;
 
-				protected void onTick() {
-					System.out.println("Trying to buy " + targetFruitTitle);
-					// Update the list of seller agents
-					DFAgentDescription template = new DFAgentDescription();
-					ServiceDescription sd = new ServiceDescription();
-					sd.setType("fruit-selling");
-					template.addServices(sd);
-					try {
-						DFAgentDescription[] result = DFService.search(myAgent, template);
-						System.out.println("Found the following seller agents:");
-						sellerAgents = new AID[result.length];
-						for (int i = 0; i < result.length; ++i) {
-							sellerAgents[i] = result[i].getName();
-							System.out.println(sellerAgents[i].getName());
+					protected void onTick() {
+						System.out.println("Trying to buy " + targetFruitTitle);
+						// Update the list of seller agents
+						DFAgentDescription template = new DFAgentDescription();
+						ServiceDescription sd = new ServiceDescription();
+						sd.setType("fruit-selling");
+						template.addServices(sd);
+						try {
+							DFAgentDescription[] result = DFService.search(myAgent, template);
+							System.out.println("Found the following seller agents:");
+							sellerAgents = new AID[result.length];
+							for (int i = 0; i < result.length; ++i) {
+								sellerAgents[i] = result[i].getName();
+								System.out.println(sellerAgents[i].getName());
+							}
+						} catch (FIPAException fe) {
+							fe.printStackTrace();
 						}
-					} catch (FIPAException fe) {
-						fe.printStackTrace();
-					}
 
-					// Perform the request
-					myAgent.addBehaviour(new RequestPerformer());
-				}
-			});
+						// Perform the request
+						myAgent.addBehaviour(new RequestPerformer());
+					}
+				});				
+			}
+
 		} else {
 			// Make the agent terminate
 			System.out.println("No target fruit specified");

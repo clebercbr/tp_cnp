@@ -14,18 +14,15 @@ import java.util.*;
 public class FruitSellerAgent extends Agent {
 	private static final long serialVersionUID = 1L;
 	// The catalogue of fruits for sale (maps the fruit to its price)
-	private Hashtable catalogue;
-	// The GUI by means of which the user can add fruits in the catalogue
-	private FruitSellerGui myGui;
+	private Hashtable<String, Float> catalogue;
 
 	// Put agent initializations here
 	protected void setup() {
 		// Create the catalogue
-		catalogue = new Hashtable();
-
-		// Create and show the GUI 
-		myGui = new FruitSellerGui(this);
-		myGui.showGui();
+		catalogue = new Hashtable<String, Float>();
+		updateCatalogue("Banana",1.0);
+		updateCatalogue("Apple",2.0);
+		updateCatalogue("Pineapple", 2.5);
 
 		// Register the fruit-selling service in the yellow pages
 		DFAgentDescription dfd = new DFAgentDescription();
@@ -57,8 +54,7 @@ public class FruitSellerAgent extends Agent {
 		catch (FIPAException fe) {
 			fe.printStackTrace();
 		}
-		// Close the GUI
-		myGui.dispose();
+
 		// Printout a dismissal message
 		System.out.println("Seller-agent "+getAID().getName()+" terminating.");
 	}
@@ -66,13 +62,13 @@ public class FruitSellerAgent extends Agent {
 	/*
      This is invoked by the GUI when the user adds a new fruit for sale
 	 */
-	public void updateCatalogue(final String title, final int price) {
+	public void updateCatalogue(final String title, final double d) {
 		addBehaviour(new OneShotBehaviour() {
 			private static final long serialVersionUID = 1L;
 
 			public void action() {
-				catalogue.put(title, new Integer(price));
-				System.out.println(title+" inserted into catalogue. Price = "+price);
+				catalogue.put(title, new Float(d));
+				System.out.println(title+" inserted into catalogue. Price = "+d);
 			}
 		} );
 	}
@@ -96,7 +92,7 @@ public class FruitSellerAgent extends Agent {
 				String title = msg.getContent();
 				ACLMessage reply = msg.createReply();
 
-				Integer price = (Integer) catalogue.get(title);
+				Float price = (Float) catalogue.get(title);
 				if (price != null) {
 					// The requested fruit is available for sale. Reply with the price
 					reply.setPerformative(ACLMessage.PROPOSE);
@@ -124,6 +120,9 @@ public class FruitSellerAgent extends Agent {
 	   purchase has been sucesfully completed.
 	 */
 	private class PurchaseOrdersServer extends CyclicBehaviour {
+
+		private static final long serialVersionUID = 1L;
+
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.ACCEPT_PROPOSAL);
 			ACLMessage msg = myAgent.receive(mt);
@@ -132,7 +131,7 @@ public class FruitSellerAgent extends Agent {
 				String title = msg.getContent();
 				ACLMessage reply = msg.createReply();
 
-				Integer price = (Integer) catalogue.remove(title);
+				Float price = (Float) catalogue.remove(title);
 				if (price != null) {
 					reply.setPerformative(ACLMessage.INFORM);
 					System.out.println(title+" sold to agent "+msg.getSender().getName());
