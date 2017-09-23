@@ -1,4 +1,4 @@
-package fruits;
+package jadeagents;
 
 import jade.core.Agent;
 import jade.core.AID;
@@ -10,70 +10,62 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 
-public class FruitBuyerAgent extends Agent {
+public class Initiator extends Agent {
 	private static final long serialVersionUID = 1L;
-	// The fruit to buy
-	private String targetFruitTitle;
 	// The list of known seller agents
-	private AID[] sellerAgents;
+	private AID[] participantAgents;
 	
 	@Override
 	// Put agent initializations here
 	protected void setup() {
 		// Printout a welcome message
-		System.out.println("Hallo! Buyer-agent " + getAID().getName() + " is ready.");
+		System.out.println("["+getAID().getLocalName()+"] Hello! Buyer-agent " + getAID().getName() + " is ready.");
 
 		// Get the fruit to buy as a start-up argument
-		Object[] args = getArguments();
+		final Object[] args = getArguments();
 		if (args != null && args.length > 0) {
-			for (int i = 0; i < args.length; i++)
-			{
-				targetFruitTitle = (String) args[i];
-				System.out.println("Target fruit is " + targetFruitTitle);
+			// Add a TickerBehaviour that schedules a request to seller agents every minute
+			addBehaviour(new TickerBehaviour(this, 6000) {
+				private static final long serialVersionUID = 1L;
 
-				// Add a TickerBehaviour that schedules a request to seller agents every minute
-				addBehaviour(new TickerBehaviour(this, 6000) {
-					private static final long serialVersionUID = 1L;
-
-					protected void onTick() {
-						System.out.println("Trying to buy " + targetFruitTitle);
-						// Update the list of seller agents
-						DFAgentDescription template = new DFAgentDescription();
-						ServiceDescription sd = new ServiceDescription();
-						sd.setType("fruit-selling");
-						template.addServices(sd);
-						try {
-							DFAgentDescription[] result = DFService.search(myAgent, template);
-							System.out.println("Found the following seller agents:");
-							sellerAgents = new AID[result.length];
-							for (int i = 0; i < result.length; ++i) {
-								sellerAgents[i] = result[i].getName();
-								System.out.println(sellerAgents[i].getName());
-							}
-						} catch (FIPAException fe) {
-							fe.printStackTrace();
+				@Override
+				protected void onTick() {
+					// Update the list of seller agents
+					DFAgentDescription template = new DFAgentDescription();
+					ServiceDescription sd = new ServiceDescription();
+					sd.setType("fruit-selling");
+					template.addServices(sd);
+					try {
+						DFAgentDescription[] result = DFService.search(myAgent, template);
+						System.out.print("["+getAID().getLocalName()+"] Found the following seller agents: ");
+						participantAgents = new AID[result.length];
+						for (int i = 0; i < result.length; ++i) {
+							participantAgents[i] = result[i].getName();
+							System.out.print(participantAgents[i].getLocalName()+" ");
 						}
-
-						// Perform the request
-						myAgent.addBehaviour(new RequestPerformer());
+						System.out.print("\n");
+					} catch (FIPAException fe) {
+						fe.printStackTrace();
 					}
-				});				
-			}
 
+					// Perform the request
+					myAgent.addBehaviour(new RequestPerformer("Banana"));
+					myAgent.addBehaviour(new RequestPerformer("Apple"));
+					myAgent.addBehaviour(new RequestPerformer("Guava"));
+					myAgent.addBehaviour(new RequestPerformer("Pineapple"));
+				}
+			});
 		} else {
 			// Make the agent terminate
 			System.out.println("No target fruit specified");
 			doDelete();
-
 		}
 	}
-
-	
 
 	// Put agent clean-up operations here
 	protected void takeDown() {
 		// Printout a dismissal message
-		System.out.println("Buyer-agent " + getAID().getName() + " terminating.");
+		System.out.println("["+getAID().getLocalName()+"] Buyer-agent " + getAID().getName() + " terminating.");
 	}
 
 	/*
@@ -83,26 +75,32 @@ public class FruitBuyerAgent extends Agent {
 	private class RequestPerformer extends Behaviour {
 		private static final long serialVersionUID = 1L;
 		private AID bestSeller; // The agent who provides the best offer
-		private int bestPrice; // The best offered price
+		private float bestPrice; // The best offered price
 		private int repliesCnt = 0; // The counter of replies from seller agents
 		private MessageTemplate mt; // The template to receive replies
 		private int step = 0;
+		private String targetFruit;
+		
+		public RequestPerformer(String targetFruit) {
+			this.targetFruit = targetFruit;
+		}
 
 		public void action() {
 			switch (step) {
 			case 0:
 				// Send the cfp to all sellers
 				ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
-				for (int i = 0; i < sellerAgents.length; ++i) {
-					cfp.addReceiver(sellerAgents[i]);
+				for (int i = 0; i < participantAgents.length; ++i) {
+					cfp.addReceiver(participantAgents[i]);
 				}
-				cfp.setContent(targetFruitTitle);
+				cfp.setContent(targetFruit);
 				cfp.setConversationId("fruit-trade");
 				cfp.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
 				myAgent.send(cfp);
 				// Prepare the template to get proposals
 				mt = MessageTemplate.and(MessageTemplate.MatchConversationId("fruit-trade"),
 						MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
+				System.out.println("["+getAID().getLocalName()+"] Asked for: " + targetFruit);
 				step = 1;
 				break;
 			case 1:
@@ -112,15 +110,24 @@ public class FruitBuyerAgent extends Agent {
 					// Reply received
 					if (reply.getPerformative() == ACLMessage.PROPOSE) {
 						// This is an offer
-						int price = Integer.parseInt(reply.getContent());
+						float price = Float.parseFloat(reply.getContent());
+
+						System.out.println("[" + getAID().getLocalName() + "] Received ("
+								+ reply.getSender().getLocalName() + ") '" + targetFruit + "' $ " + price);
+
 						if (bestSeller == null || price < bestPrice) {
 							// This is the best offer at present
 							bestPrice = price;
 							bestSeller = reply.getSender();
 						}
+					} else if (reply.getPerformative() == ACLMessage.REFUSE) {
+						
+						System.out.println("[" + getAID().getLocalName() + "] Refuse ("
+								+ reply.getSender().getLocalName() + ") '" + targetFruit);
+
 					}
 					repliesCnt++;
-					if (repliesCnt >= sellerAgents.length) {
+					if (repliesCnt >= participantAgents.length) {
 						// We received all replies
 						step = 2;
 					}
@@ -132,10 +139,12 @@ public class FruitBuyerAgent extends Agent {
 				// Send the purchase order to the seller that provided the best offer
 				ACLMessage order = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
 				order.addReceiver(bestSeller);
-				order.setContent(targetFruitTitle);
+				order.setContent(targetFruit);
 				order.setConversationId("fruit-trade");
 				order.setReplyWith("order" + System.currentTimeMillis());
 				myAgent.send(order);
+				System.out.println("[" + getAID().getLocalName() + "] acceptProposal ("
+						+ bestSeller.getLocalName() + ") '" + targetFruit + "' $ " + bestPrice);
 				// Prepare the template to get the purchase order reply
 				mt = MessageTemplate.and(MessageTemplate.MatchConversationId("fruit-trade"),
 						MessageTemplate.MatchInReplyTo(order.getReplyWith()));
@@ -143,32 +152,13 @@ public class FruitBuyerAgent extends Agent {
 				break;
 			case 3:
 				// Receive the purchase order reply
-				reply = myAgent.receive(mt);
-				if (reply != null) {
-					// Purchase order reply received
-					if (reply.getPerformative() == ACLMessage.INFORM) {
-						// Purchase successful. We can terminate
-						System.out.println(
-								targetFruitTitle + " successfully purchased from agent " + reply.getSender().getName());
-						System.out.println("Price = " + bestPrice);
-						myAgent.doDelete();
-					} else {
-						System.out.println("Attempt failed: requested fruit already sold.");
-					}
-
-					step = 4;
-				} else {
-					block();
-				}
+				step = 4;
 				break;
 			}
 		}
 
 		public boolean done() {
-			if (step == 2 && bestSeller == null) {
-				System.out.println("Attempt failed: " + targetFruitTitle + " not available for sale");
-			}
 			return ((step == 2 && bestSeller == null) || step == 4);
 		}
-	} // End of inner class RequestPerformer
+	}
 }

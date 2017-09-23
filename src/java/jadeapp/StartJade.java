@@ -27,13 +27,14 @@ public class StartJade {
     }
     
     void createAgents() throws Exception {
-        for (int i=1; i<2; i++) {
-            Object args[] = new Object[] {"Banana", "Apple", "Guava", "Pineapple"};
-            AgentController ac = cc.createNewAgent("Buyer"+i, "fruits.FruitBuyerAgent", args);
+    	//Participants must be created firstly since they must be waiting for a cfp
+        for (int i=1; i<=2; i++) {
+            AgentController ac = cc.createNewAgent("p"+i, "jadeagents.Participant", new Object[] { i });
             ac.start();
         }
-        for (int i=1; i<2; i++) {
-            AgentController ac = cc.createNewAgent("Seller"+i, "fruits.FruitSellerAgent", new Object[] { i });
+        for (int i=1; i<=2; i++) {
+            Object args[] = new Object[] {"Banana", "Apple", "Guava", "Pineapple"};
+            AgentController ac = cc.createNewAgent("i"+i, "jadeagents.Initiator", args);
             ac.start();
         }
     }

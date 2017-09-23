@@ -1,4 +1,4 @@
-package fruits;
+package jadeagents;
 
 import jade.core.Agent;
 import jade.core.behaviours.*;
@@ -11,10 +11,11 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 
 import java.util.*;
 
-public class FruitSellerAgent extends Agent {
+public class Participant extends Agent {
 	private static final long serialVersionUID = 1L;
 	// The catalogue of fruits for sale (maps the fruit to its price)
 	private Hashtable<String, Float> catalogue;
+	private float margin = (float) 2.0;
 
 	// Put agent initializations here
 	protected void setup() {
@@ -39,10 +40,10 @@ public class FruitSellerAgent extends Agent {
 		}
 
 		// Add the behaviour serving queries from buyer agents
-		addBehaviour(new OfferRequestsServer());
+		addBehaviour(new CFPServer());
 
 		// Add the behaviour serving purchase orders from buyer agents
-		addBehaviour(new PurchaseOrdersServer());
+		addBehaviour(new AcceptProposalServer());
 	}
 
 	// Put agent clean-up operations here
@@ -54,9 +55,6 @@ public class FruitSellerAgent extends Agent {
 		catch (FIPAException fe) {
 			fe.printStackTrace();
 		}
-
-		// Printout a dismissal message
-		System.out.println("Seller-agent "+getAID().getName()+" terminating.");
 	}
 
 	/*
@@ -68,7 +66,6 @@ public class FruitSellerAgent extends Agent {
 
 			public void action() {
 				catalogue.put(title, new Float(d));
-				System.out.println(title+" inserted into catalogue. Price = "+d);
 			}
 		} );
 	}
@@ -81,7 +78,7 @@ public class FruitSellerAgent extends Agent {
 	   with a PROPOSE message specifying the price. Otherwise a REFUSE message is
 	   sent back.
 	 */
-	private class OfferRequestsServer extends CyclicBehaviour {
+	private class CFPServer extends CyclicBehaviour {
 		private static final long serialVersionUID = 1L;
 
 		public void action() {
@@ -96,7 +93,7 @@ public class FruitSellerAgent extends Agent {
 				if (price != null) {
 					// The requested fruit is available for sale. Reply with the price
 					reply.setPerformative(ACLMessage.PROPOSE);
-					reply.setContent(String.valueOf(price.intValue()));
+					reply.setContent(String.format("%.2f", margin*Math.random()+price.floatValue()));
 				}
 				else {
 					// The requested fruit is NOT available for sale.
@@ -109,17 +106,12 @@ public class FruitSellerAgent extends Agent {
 				block();
 			}
 		}
-	}  // End of inner class OfferRequestsServer
+	}
 
 	/*
-	   Inner class PurchaseOrdersServer.
-	   This is the behaviour used by Fruit-seller agents to serve incoming 
-	   offer acceptances (i.e. purchase orders) from buyer agents.
-	   The seller agent removes the purchased fruit from its catalogue 
-	   and replies with an INFORM message to notify the buyer that the
-	   purchase has been sucesfully completed.
+	   Initiator is saying he accepted my proposal, so inform DONE
 	 */
-	private class PurchaseOrdersServer extends CyclicBehaviour {
+	private class AcceptProposalServer extends CyclicBehaviour {
 
 		private static final long serialVersionUID = 1L;
 
@@ -128,24 +120,14 @@ public class FruitSellerAgent extends Agent {
 			ACLMessage msg = myAgent.receive(mt);
 			if (msg != null) {
 				// ACCEPT_PROPOSAL Message received. Process it
-				String title = msg.getContent();
 				ACLMessage reply = msg.createReply();
 
-				Float price = (Float) catalogue.remove(title);
-				if (price != null) {
-					reply.setPerformative(ACLMessage.INFORM);
-					System.out.println(title+" sold to agent "+msg.getSender().getName());
-				}
-				else {
-					// The requested fruit has been sold to another buyer in the meanwhile .
-					reply.setPerformative(ACLMessage.FAILURE);
-					reply.setContent("not-available");
-				}
+				reply.setPerformative(ACLMessage.INFORM);
 				myAgent.send(reply);
 			}
 			else {
 				block();
 			}
 		}
-	}  // End of inner class OfferRequestsServer
+	}
 }
