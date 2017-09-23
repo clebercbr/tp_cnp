@@ -1,2 +1,2 @@
-+!sendProposals(RequestedItem)[source(X)] : true <-
-	.send(X,tell,noProposal(RequestedItem)).
++!cfp(RequestedItem)[source(X)] : true <-
+	.send(X,tell,refuse(RequestedItem)).

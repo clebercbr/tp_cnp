@@ -1,70 +1,73 @@
-proposals([]).
 desiredProducts(["Banana","Apple","Guava","Pineapple"]).
 !askForProposals.
 
 //Start broadcasting to participants send their offers
 @r1 +!askForProposals : true <- 
+	.abolish(newProposal(_,_));
+	.abolish(responsesExpected(_,_));
 	?desiredProducts(LDP);
 	for (.member(Item,LDP)) {
 		.print("Please, send your proposals for '",Item,"'.");
-		.broadcast(achieve,sendProposals(Item));	
-		.wait(3000);
-		-+checkProposals(Item);
-		?bestOffer(SSupplier,PProduct,PPrice,QtOffers);
-		?proposals(ListProposals);
-		.print("Proposals received: ",ListProposals,". Best offer: ",PProduct," $",PPrice);
-		for (.member(Proposal,ListProposals)) {
-			.nth(0,Proposal,XSupplier);
-			.nth(1,Proposal,XProduct);
-			.nth(2,Proposal,XPrice);
-			if ((QtOffers >= 3) & (SSupplier = XSupplier) & (PProduct = XProduct)) {
-				.send(XSupplier,tell,accepted(XProduct,XPrice));
-			} else { 
-				.send(XSupplier,tell,rejected(XProduct,XPrice));
-			}
-			?proposals(CLP);
-			.delete([XSupplier,XProduct,XPrice],CLP,Result);
-			-+proposals(Result);
-		}
+		.broadcast(achieve,sendProposals(Item));
+		.my_name(Me);
+		.concat("[",Me,"] Asked for: ",Item,C)
+		tp_cnp.writeOutputFile(C);
+		?responses(N);
+		-+responsesExpected(Item,N);
 	};
 	.print("It is enough for today.").
 	
-//A proposal was received
-@p1 +newProposal(Product,Price)[source(Supplier)] : true <-
-	.print("Proposal received from ",Supplier,": product ''",Product ,"'' price $", Price);
-	?proposals(ListProposals);
-	.concat(ListProposals,[[Supplier,Product,Price]],NewLP);
-	-+proposals(NewLP);
-	.print("List: ",NewLP).
+//An expected proposal was received
+@np1 +newProposal(Product,Price)[source(Supplier)] : desiredProducts(LDP) & .sublist([Product],LDP) <-
+	.my_name(Me);
+	.concat("[",Me,"] Received(",Supplier,"): ",Product," $",Price,CC)
+	tp_cnp.writeOutputFile(CC);
+	?responses(N);
+	.count(newProposal(Product,_)[source(_)],X);
+	.print("Proposal received from ",Supplier,": product ''",Product ,"'' price $", Price," [",X,"/",N,"]");
+	!deliberate.
 
-//Check if already have 3 proposals for one accept and other rejects  
-@p2 +checkProposals(ProductName) : true <-
-    ?proposals(List);
-	.length(List,LLenght);
-	-+listSize(0);
-	-+bestOffer("","","",0);
-	while(listSize(Sz) & Sz < LLenght) {        
-		.nth(Sz,List,Item);
-		.nth(0,Item,Supplier);
-		.nth(1,Item,Product);
-		.nth(2,Item,Price);
-		.print("Checking proposal from ",Supplier,": product ''",Product ,"'' price $", Price);
-		if (Product = ProductName) {
-			?bestOffer(X,W,Y,Z);
-			if (Z > 0) {
-				-+bestOffer(X,W,Y,Z+1);
-				if (Y > Price) {
-					-+bestOffer(Supplier,Product,Price,Z+1);
-				};
-			} else {
-				-+bestOffer(Supplier,Product,Price,Z+1);
-			};
-		};
-		-+listSize(Sz+1);
-    }.	
+//An unwanted proposal was received
+@np2 +newProposal(Product,Price)[source(Supplier)] : true <-
+	.my_name(Me);
+	.concat("[",Me,"] Unwanted(",Supplier,"): ",Product," $",Price,CC)
+	tp_cnp.writeOutputFile(CC);
+!!!!!!!!? como fazer isso?	?responsesExpected(N);
+	.count(newProposal(Product,_)[source(_)],X);
+	.print("Unwanted proposal from ",Supplier,": product ''",Product ,"'' price $", Price," [",X,"/",N,"]");
+	!deliberate.
 
-@p3 +noProposal(Product)[source(Supplier)] : true <-
-	.print("A rejection was received from ",Supplier,": product ''",Product ,"''").
+@d1 +!deliberate : true .
+//	if (.count(newProposal(_,_)[source(_)] == N)
+//	.concat(ListProposals,[[Supplier,Product,Price]],NewLP);
+/*
+	for (.member(Proposal,ListProposals)) {
+		.nth(0,Proposal,XSupplier);
+		.nth(1,Proposal,XProduct);
+		.nth(2,Proposal,XPrice);
+		if ((QtOffers >= 3) & (SSupplier == XSupplier) & (PProduct == XProduct)) {
+			.send(XSupplier,tell,accepted(XProduct,XPrice));
+			.concat("[",Me,"] Accepted(",XSupplier,"): ",XProduct," $",XPrice,CC)
+			tp_cnp.writeOutputFile(CC);
+		} else { 
+			.send(XSupplier,tell,rejected(XProduct,XPrice));
+			.concat("[",Me,"] Rejected(",XSupplier,"): ",XProduct," $",XPrice,CC)
+			tp_cnp.writeOutputFile(CC);
+		}
+		?proposals(CLP);
+		.delete([XSupplier,XProduct,XPrice],CLP,Result);
+		-+proposals(Result);
+	}*/
+
 	
+@nop3 +noProposal(Product)[source(Supplier)] : true <-
+	.print("A no proposal was received from ",Supplier,": product ''",Product ,"''");
+	.my_name(Me);
+	.concat("[",Me,"] NoProposal(",Supplier,"): ",Product,CC);
+	tp_cnp.writeOutputFile(CC).
+	
+	
+	
+
 //Failure event since initiator uses broadcasting
-@r2 +!sendProposals: true.
+@r2 +!sendProposals(RequestedItem): true.

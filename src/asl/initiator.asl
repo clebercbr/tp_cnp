@@ -1,95 +1,67 @@
-proposals([]).
 desiredProducts(["Banana","Apple","Guava","Pineapple"]).
 !askForProposals.
 
 //Start broadcasting to participants send their offers
 @r1 +!askForProposals : true <- 
+	.abolish(propose(_,_));
+	.abolish(refuse(_));
 	?desiredProducts(LDP);
 	for (.member(Item,LDP)) {
+		.broadcast(achieve,cfp(Item));
+		.print("Asked for: '",Item,"'.");
 		.my_name(Me);
-		.print("Please, send your proposals for '",Item,"'.");
-		-+askedFor(Item);
-		.broadcast(achieve,sendProposals(Item));
 		.concat("[",Me,"] Asked for: ",Item,C)
 		tp_cnp.writeOutputFile(C);
-		.wait(3000); 
-		-askedFor(Item);
-		-+checkProposals(Item);
-		?bestOffer(SSupplier,PProduct,PPrice,QtOffers);
-		?proposals(ListProposals);
-		//.print("Proposals received: ",ListProposals,". Best offer: ",PProduct," $",PPrice);
-		for (.member(Proposal,ListProposals)) {
-			.nth(0,Proposal,XSupplier);
-			.nth(1,Proposal,XProduct);
-			.nth(2,Proposal,XPrice);
-			if ((QtOffers >= 3) & (SSupplier == XSupplier) & (PProduct == XProduct)) {
-				.send(XSupplier,tell,accepted(XProduct,XPrice));
-				.concat("[",Me,"] Accepted(",XSupplier,"): ",XProduct," $",XPrice,CC)
-				tp_cnp.writeOutputFile(CC);
-				.send(c,achieve,addData("Accepted"));
-			} else { 
-				.send(XSupplier,tell,rejected(XProduct,XPrice));
-				.concat("[",Me,"] Rejected(",XSupplier,"): ",XProduct," $",XPrice,CC)
-				tp_cnp.writeOutputFile(CC);
-				.send(c,achieve,addData("Rejected"));
-			}
-			?proposals(CLP);
-			.delete([XSupplier,XProduct,XPrice],CLP,Result);
-			-+proposals(Result);
-		}
-	};
-	.print("It is enough for today.");
-	.send(c,achieve,finish).
-	
-//A proposal was received
-@p1 +newProposal(Product,Price)[source(Supplier)] : true <-
-	?askedFor(X);
-	if (X == Product) {
-		.print("Proposal received from ",Supplier,": product ''",Product ,"'' price $", Price);
-		?proposals(ListProposals);
-		.concat(ListProposals,[[Supplier,Product,Price]],NewLP);
-		-+proposals(NewLP);
-		//.print("List: ",NewLP);
-	} else {
-		.print("Unwanted proposal from ",Supplier,": product ''",Product ,"'' price $", Price);
-		.my_name(Me);
-		.concat("[",Me,"] Unwanted(",XSupplier,"): ",XProduct," $",XPrice,CC)
-		tp_cnp.writeOutputFile(CC);
-		.send(c,achieve,addData("Unwanted"));
 	}.
-
-//Check if already have 3 proposals for one accept and other rejects  
-@p2 +checkProposals(ProductName) : true <-
-    ?proposals(List);
-	.length(List,LLenght);
-	-+listSize(0);
-	-+bestOffer("","","",0);
-	while(listSize(Sz) & Sz < LLenght) {        
-		.nth(Sz,List,Item);
-		.nth(0,Item,Supplier);
-		.nth(1,Item,Product);
-		.nth(2,Item,Price);
-		//.print("Checking proposal from ",Supplier,": product ''",Product ,"'' price $", Price);
-		if (Product == ProductName) {
-			?bestOffer(X,W,Y,Z);
-			if (Z > 0) {
-				-+bestOffer(X,W,Y,Z+1);
-				if (Y > Price) {
-					-+bestOffer(Supplier,Product,Price,Z+1);
-				};
-			} else {
-				-+bestOffer(Supplier,Product,Price,Z+1);
-			};
-		};
-		-+listSize(Sz+1);
-    }.	
-
-@p3 +noProposal(Product)[source(Supplier)] : true <-
-	.print("A no proposal was received from ",Supplier,": product ''",Product ,"''");
+	
+//An expected proposal was received
+@np1 +propose(Product,Price)[source(Supplier)] : desiredProducts(LDP) & .sublist([Product],LDP) <-
 	.my_name(Me);
-	.concat("[",Me,"] NoProposal(",Supplier,"): ",Product,CC);
+	.concat("[",Me,"] Received(",Supplier,"): '",Product,"' $",Price,CC)
 	tp_cnp.writeOutputFile(CC);
-	.send(c,achieve,addData("NoProposal")).
+	.print("Received (",Supplier,"): ''",Product ,"'' $", Price);
+	!deliberate(Product).
+
+@d1[atomic] +!deliberate(Product) : true <-
+	?expectedResponses(N);
+	.count(propose(Product,_)[source(_)],X);
+	if (X == N) {
+		.findall([V,P,S], propose(P,V)[source(S)] & P == Product, ListProposals);
+		.sort(ListProposals,SortedProposals);
+		.length(SortedProposals,L);
+		-+listSize(0);
+		while(listSize(Sz) & Sz < L) {
+			.nth(Sz,SortedProposals,Proposal);
+			.nth(0,Proposal,XPrice);
+			.nth(1,Proposal,XProduct);
+			.nth(2,Proposal,XSupplier);
+			.my_name(Me);
+			if (Sz == 0) { //The first is the mininum price		
+				.send(XSupplier,tell,acceptProposal(XProduct,XPrice));
+				.print("acceptProposal (",XSupplier,"): ''",XProduct ,"'' $", XPrice);
+				.concat("[",Me,"] acceptProposal(",XSupplier,"): ",XProduct," $",XPrice,CC)
+				tp_cnp.writeOutputFile(CC);
+			} else { 
+				.send(XSupplier,tell,rejectProposal(XProduct,XPrice));
+				.print("rejectProposal (",XSupplier,"): ''",XProduct ,"'' $", XPrice);
+				.concat("[",Me,"] rejectProposal(",XSupplier,"): ",XProduct," $",XPrice,CC)
+				tp_cnp.writeOutputFile(CC);
+			}
+			-propose(XProduct,XPrice)[source(XSupplier)];
+			-+listSize(Sz+1);
+		}	
+	}.
+	
+//An refuse for proposal was received
+@nop3 +refuse(Product)[source(Supplier)] : true <-
+	.print("Refuse (",Supplier,"): ''",Product ,"''");
+	.my_name(Me);
+	.concat("[",Me,"] Refuse(",Supplier,"): '",Product,"'",CC);
+	tp_cnp.writeOutputFile(CC);
+	!deliberate(Product).
+	
+//A participant informed the service is done
++informDone(Product,Price) : true.
 
 //Failure event since initiator uses broadcasting
-@r2 +!sendProposals(RequestedItem): true.
+@r2 +!cfp(RequestedItem): true.
