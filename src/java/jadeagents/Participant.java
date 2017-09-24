@@ -44,6 +44,7 @@ public class Participant extends Agent {
 
 		// Add the behaviour serving purchase orders from buyer agents
 		addBehaviour(new AcceptProposalServer());
+		addBehaviour(new RejectProposalServer());
 	}
 
 	// Put agent clean-up operations here
@@ -58,7 +59,7 @@ public class Participant extends Agent {
 	}
 
 	/*
-     This is invoked by the GUI when the user adds a new fruit for sale
+     Add a product in catalogue
 	 */
 	public void updateCatalogue(final String title, final double d) {
 		addBehaviour(new OneShotBehaviour() {
@@ -71,12 +72,7 @@ public class Participant extends Agent {
 	}
 
 	/*
-	   Inner class OfferRequestsServer.
-	   This is the behaviour used by Fruit-seller agents to serve incoming requests 
-	   for offer from buyer agents.
-	   If the requested fruit is in the local catalogue the seller agent replies 
-	   with a PROPOSE message specifying the price. Otherwise a REFUSE message is
-	   sent back.
+		Wait for a call fro Proposals
 	 */
 	private class CFPServer extends CyclicBehaviour {
 		private static final long serialVersionUID = 1L;
@@ -93,12 +89,12 @@ public class Participant extends Agent {
 				if (price != null) {
 					// The requested fruit is available for sale. Reply with the price
 					reply.setPerformative(ACLMessage.PROPOSE);
-					reply.setContent(String.format("%.2f", margin*Math.random()+price.floatValue()));
+					reply.setContent(title + ", " + String.format("%.2f", margin * Math.random() + price.floatValue()));
 				}
 				else {
 					// The requested fruit is NOT available for sale.
 					reply.setPerformative(ACLMessage.REFUSE);
-					reply.setContent("not-available");
+					reply.setContent(title);
 				}
 				myAgent.send(reply);
 			}
@@ -127,6 +123,23 @@ public class Participant extends Agent {
 			}
 			else {
 				block();
+			}
+		}
+
+	}
+	/*
+	   Initiator is saying he rejected my proposal
+	 */
+	private class RejectProposalServer extends CyclicBehaviour {
+
+		private static final long serialVersionUID = 1L;
+
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REJECT_PROPOSAL);
+			ACLMessage msg = myAgent.receive(mt);
+			if (msg != null) {
+				// REJECT_PROPOSAL Message received. Do nothing
+				return;
 			}
 		}
 	}
