@@ -97,11 +97,12 @@ public class Initiator extends Agent {
 					cfp.addReceiver(participantAgents[i]);
 				
 				cfp.setContent(targetProduct);
-				cfp.setConversationId("fruit-trade");
+				// Each behaviour must be waiting for a different conversation subject
+				cfp.setConversationId(targetProduct);
 				cfp.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
 				myAgent.send(cfp);
 				// Prepare the template to get proposals
-				mt = MessageTemplate.and(MessageTemplate.MatchConversationId("fruit-trade"),
+				mt = MessageTemplate.and(MessageTemplate.MatchConversationId(targetProduct),
 						MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
 				System.out.println("["+getAID().getLocalName()+"] Asked for: " + targetProduct);
 				cfpState = 1;
