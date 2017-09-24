@@ -97,6 +97,8 @@ public class Participant extends Agent {
 					reply.setContent(title);
 				}
 				myAgent.send(reply);
+				/*System.out.println(reply.getSender().getLocalName() + " to " + reply.getAllReceiver().next().toString()
+						+ " : " + reply.getContent());*/
 			}
 			else {
 				block();

@@ -58,6 +58,8 @@ public class Initiator extends Agent {
 					myAgent.addBehaviour(new RequestPerformer("Pineapple"));
 				}
 			});
+			
+
 		} else {
 			// Make the agent terminate
 			System.out.println("No target fruit specified");
@@ -130,7 +132,8 @@ public class Initiator extends Agent {
 						}
 
 					} else {
-						System.out.println("[" + getAID().getLocalName() + "] Unexpected message!");
+						System.out.println("[" + getAID().getLocalName() + "] Unexpected message :("
+								+ reply.getSender().getLocalName() + ") " + reply.getContent());
 						
 					}
 					
