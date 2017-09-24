@@ -18,6 +18,7 @@ MAS tp_cnp {
 		i initiator [beliefs="expectedResponses(2)"] #2;
 		p participant #2;
 		r rejector #1;
+		c controller [beliefs="expectedDones(2)"] #1;
 
 	aslSourcePath:
 		"src/asl";
