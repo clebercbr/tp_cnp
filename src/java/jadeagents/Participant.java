@@ -121,6 +121,7 @@ public class Participant extends Agent {
 				ACLMessage reply = msg.createReply();
 
 				reply.setPerformative(ACLMessage.INFORM);
+				reply.setContent(msg.getContent());
 				myAgent.send(reply);
 			}
 			else {
@@ -142,6 +143,9 @@ public class Participant extends Agent {
 			if (msg != null) {
 				// REJECT_PROPOSAL Message received. Do nothing
 				return;
+			}
+			else {
+				block();
 			}
 		}
 	}

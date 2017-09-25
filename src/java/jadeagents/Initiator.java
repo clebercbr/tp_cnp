@@ -4,19 +4,32 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import jade.core.Agent;
+import jade.content.lang.Codec;
+import jade.content.lang.sl.SLCodec;
+import jade.content.onto.Ontology;
+import jade.content.onto.basic.Action;
 import jade.core.AID;
 import jade.core.behaviours.*;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.domain.AMSService;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.AMSAgentDescription;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.JADEAgentManagement.JADEManagementOntology;
+import jade.domain.JADEAgentManagement.ShutdownPlatform;
 
 public class Initiator extends Agent {
 	private static final long serialVersionUID = 1L;
 	// The list of known seller agents
 	private AID[] participantAgents;
+	private int numberOfInitiators;
+	private int numberOfParticipants;
+	private int numberOfRejectors;
+	private int activeBehaviour;
 	
 	@Override
 	// Put agent initializations here
@@ -27,6 +40,10 @@ public class Initiator extends Agent {
 		// Get the fruit to buy as a start-up argument
 		final Object[] args = getArguments();
 		if (args != null && args.length > 0) {
+			numberOfInitiators = (int) args[0];
+			numberOfParticipants = (int) args[1];
+			numberOfRejectors = (int) args[2];
+
 			// Add a TickerBehaviour that schedules a request to seller agents every minute
 			addBehaviour(new OneShotBehaviour() {
 				private static final long serialVersionUID = 1L;
@@ -37,9 +54,12 @@ public class Initiator extends Agent {
 					DFAgentDescription template = new DFAgentDescription();
 					ServiceDescription sd = new ServiceDescription();
 					sd.setType("fruit-selling");
-					template.addServices(sd);
 					try {
-						DFAgentDescription[] result = DFService.search(myAgent, template);
+						DFAgentDescription[] result;
+						do {
+							result = DFService.search(myAgent, template);
+						} while (result.length != numberOfParticipants + numberOfRejectors);
+
 						System.out.print("["+getAID().getLocalName()+"] Participants founded: ");
 						participantAgents = new AID[result.length];
 						for (int i = 0; i < result.length; ++i) {
@@ -54,11 +74,14 @@ public class Initiator extends Agent {
 					// Perform the request
 					myAgent.addBehaviour(new RequestPerformer("Banana"));
 					myAgent.addBehaviour(new RequestPerformer("Apple"));
-					myAgent.addBehaviour(new RequestPerformer("Guava"));
 					myAgent.addBehaviour(new RequestPerformer("Pineapple"));
+					activeBehaviour = 3;
+					myAgent.addBehaviour(new RequestPerformer("Guava"));
 				}
 			});
 			
+			// MAS shutdown watch behaviour
+			addBehaviour(new MasShutdown());
 
 		} else {
 			// Make the agent terminate
@@ -132,10 +155,11 @@ public class Initiator extends Agent {
 									+ reply.getSender().getLocalName() + ") '" + reply.getContent());
 						}
 
-					} else {
-						System.out.println("[" + getAID().getLocalName() + "] Unexpected message :("
-								+ reply.getSender().getLocalName() + ") " + reply.getContent());
-						
+					} else if (reply.getPerformative() == ACLMessage.INFORM) {
+
+						// The bestSeller sent that it is done
+						cfpState = 2;
+						activeBehaviour--;
 					}
 					
 					int count = 0, bestProposal = -1;
@@ -192,8 +216,6 @@ public class Initiator extends Agent {
 						while (proposalIterator.hasNext())
 							if (proposalIterator.next().product.equals(targetProduct)) proposalIterator.remove();
 						
-						// If all participants sent proposal for targetProduct and it was already replied
-						cfpState = 2;
 					}
 
 				} else {
@@ -208,6 +230,60 @@ public class Initiator extends Agent {
 		}
 	}
 	
+	
+	/*
+	   Initiator is saying he rejected my proposal
+	 */
+	private class MasShutdown extends CyclicBehaviour {
+
+		private static final long serialVersionUID = 1L;
+
+		public void action() {
+			
+			AMSAgentDescription[] agents = null;
+
+			try {
+				SearchConstraints c = new SearchConstraints();
+				c.setMaxResults(new Long(-1));
+				agents = AMSService.search(myAgent, new AMSAgentDescription(), c);
+
+				int suspendedAgent = 0; // rma, ams, df, i*, r*, p*
+				for (int i = 0; i < agents.length; i++)
+					if (agents[i].getState().equals("suspended")) {
+						suspendedAgent++;
+					}
+
+				// This is the last Initiator alive, so he is the in charge for ask shutdown
+				if (activeBehaviour == 0)
+					suspendedAgent++;
+
+				if (suspendedAgent >= numberOfInitiators) {
+					Codec codec = new SLCodec();    
+					Ontology jmo = JADEManagementOntology.getInstance();
+					getContentManager().registerLanguage(codec);
+					getContentManager().registerOntology(jmo);
+					ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+					msg.addReceiver(getAMS());
+					msg.setLanguage(codec.getName());
+					msg.setOntology(jmo.getName());
+					try {
+					    myAgent.doSuspend();
+						getContentManager().fillContent(msg, new Action(getAID(), new ShutdownPlatform()));
+					    send(msg);
+					}
+					catch (Exception e) {}
+				
+				} else {
+					if (activeBehaviour == 0) myAgent.doSuspend();
+					block();
+				}
+
+			} catch (FIPAException fe) {
+				fe.printStackTrace();
+			}
+		}
+	}
+
 	private class Proposal {
 		public AID source;
 		public String product;

@@ -18,28 +18,28 @@ public class StartJade {
     }
 
     void startContainer() {
-        //Runtime rt= Runtime.instance();
         ProfileImpl p = new ProfileImpl();
         p.setParameter(Profile.MAIN_HOST, "localhost");
-        p.setParameter(Profile.GUI, "false");
+        p.setParameter(Profile.GUI, "true");
         
         cc = Runtime.instance().createMainContainer(p);
     }
     
     void createAgents() throws Exception {
+    	int nI = 2, nP = 2, nR = 1;
     	//Participants must be created firstly since they must be waiting for a cfp
-        for (int i=1; i<=2; i++) {
+        for (int i=1; i<=nP; i++) {
             AgentController ac = cc.createNewAgent("p"+i, "jadeagents.Participant", new Object[] { i });
             ac.start();
         }
     	//Rejectors
-        for (int i=1; i<=1; i++) {
+        for (int i=1; i<=nR; i++) {
             AgentController ac = cc.createNewAgent("r"+i, "jadeagents.Rejector", new Object[] { i });
             ac.start();
         }
-        Thread.sleep(2000);
-        for (int i=1; i<=2; i++) {
-            Object args[] = new Object[] {"Banana", "Apple", "Guava", "Pineapple"};
+        //Initiators are the last ones to be created
+        for (int i=1; i<=nI; i++) {
+            Object args[] = new Object[] {nI, nP, nR};
             AgentController ac = cc.createNewAgent("i"+i, "jadeagents.Initiator", args);
             ac.start();
         }
