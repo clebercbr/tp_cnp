@@ -72,7 +72,7 @@ public class Participant extends Agent {
 	}
 
 	/*
-		Wait for a call fro Proposals
+		Wait for a call for Proposals
 	 */
 	private class CFPServer extends CyclicBehaviour {
 		private static final long serialVersionUID = 1L;

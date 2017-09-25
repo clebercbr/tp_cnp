@@ -126,7 +126,7 @@ public class Initiator extends Agent {
 					} else if (reply.getPerformative() == ACLMessage.REFUSE) {
 						
 						if (reply.getContent().equals(targetProduct)) {
-							proposalList.add(new Proposal(reply.getSender(), reply.getContent(), -1));
+							//proposalList.add(new Proposal(reply.getSender(), reply.getContent(), -1));
 
 							System.out.println("[" + getAID().getLocalName() + "] Refuse ("
 									+ reply.getSender().getLocalName() + ") '" + reply.getContent());
@@ -153,7 +153,7 @@ public class Initiator extends Agent {
 						}
 					}
 					// We received all replies for this product 
-					if (count == participantAgents.length) {
+					if (count == participantAgents.length-1) {
 						for (int i = 0; i < proposalList.size(); i++) {
 							if (proposalList.get(i).product.equals(targetProduct)) {
 								// If is the best offer and a valid offer: ACCEPT

@@ -32,6 +32,11 @@ public class StartJade {
             AgentController ac = cc.createNewAgent("p"+i, "jadeagents.Participant", new Object[] { i });
             ac.start();
         }
+    	//Rejectors
+        for (int i=1; i<=1; i++) {
+            AgentController ac = cc.createNewAgent("r"+i, "jadeagents.Rejector", new Object[] { i });
+            ac.start();
+        }
         Thread.sleep(2000);
         for (int i=1; i<=2; i++) {
             Object args[] = new Object[] {"Banana", "Apple", "Guava", "Pineapple"};
