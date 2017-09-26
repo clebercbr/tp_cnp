@@ -4,3 +4,4 @@
 *.csv
 src/asl/*.asl~
 bin/classes/*
+bin/*

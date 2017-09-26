@@ -34,8 +34,6 @@ public class Initiator extends Agent {
 	@Override
 	// Put agent initializations here
 	protected void setup() {
-		// Printout a welcome message
-		System.out.println("["+getAID().getLocalName()+"] Hello! Buyer-agent " + getAID().getName() + " is ready.");
 
 		// Get the fruit to buy as a start-up argument
 		final Object[] args = getArguments();
@@ -60,13 +58,10 @@ public class Initiator extends Agent {
 							result = DFService.search(myAgent, template);
 						} while (result.length != numberOfParticipants + numberOfRejectors);
 
-						System.out.print("["+getAID().getLocalName()+"] Participants founded: ");
 						participantAgents = new AID[result.length];
 						for (int i = 0; i < result.length; ++i) {
 							participantAgents[i] = result[i].getName();
-							System.out.print(participantAgents[i].getLocalName()+" ");
 						}
-						System.out.print("\n");
 					} catch (FIPAException fe) {
 						fe.printStackTrace();
 					}
@@ -90,10 +85,8 @@ public class Initiator extends Agent {
 		}
 	}
 
-	// Put agent clean-up operations here
 	protected void takeDown() {
-		// Printout a dismissal message
-		System.out.println("["+getAID().getLocalName()+"] Buyer-agent " + getAID().getName() + " terminating.");
+		return;
 	}
 
 	/*
@@ -127,7 +120,7 @@ public class Initiator extends Agent {
 				// Prepare the template to get proposals
 				mt = MessageTemplate.and(MessageTemplate.MatchConversationId(targetProduct),
 						MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
-				System.out.println("["+getAID().getLocalName()+"] Asked for: " + targetProduct);
+				//System.out.println("["+getAID().getLocalName()+"] Asked for: " + targetProduct);
 				cfpState = 1;
 				
 			} else {
@@ -142,8 +135,8 @@ public class Initiator extends Agent {
 						if (values[0].equals(targetProduct)) {
 							proposalList.add(new Proposal(reply.getSender(), values[0], Float.parseFloat(values[1])));
 
-							System.out.println("[" + getAID().getLocalName() + "] Received ("
-									+ reply.getSender().getLocalName() + ") '" + values[0] + "' $ " + Float.parseFloat(values[1]));
+							//System.out.println("[" + getAID().getLocalName() + "] Received ("
+							//		+ reply.getSender().getLocalName() + ") '" + values[0] + "' $ " + Float.parseFloat(values[1]));
 						}
 
 					} else if (reply.getPerformative() == ACLMessage.REFUSE) {
@@ -151,8 +144,8 @@ public class Initiator extends Agent {
 						if (reply.getContent().equals(targetProduct)) {
 							//proposalList.add(new Proposal(reply.getSender(), reply.getContent(), -1));
 
-							System.out.println("[" + getAID().getLocalName() + "] Refuse ("
-									+ reply.getSender().getLocalName() + ") '" + reply.getContent());
+							//System.out.println("[" + getAID().getLocalName() + "] Refuse ("
+							//		+ reply.getSender().getLocalName() + ") '" + reply.getContent());
 						}
 
 					} else if (reply.getPerformative() == ACLMessage.INFORM) {
@@ -176,8 +169,8 @@ public class Initiator extends Agent {
 							count++;
 						}
 					}
-					// We received all replies for this product 
-					if (count == participantAgents.length-1) {
+					// We received all replies for this product (minus Rejectors ones)
+					if (count == participantAgents.length - numberOfRejectors)  {
 						for (int i = 0; i < proposalList.size(); i++) {
 							if (proposalList.get(i).product.equals(targetProduct)) {
 								// If is the best offer and a valid offer: ACCEPT
@@ -189,9 +182,9 @@ public class Initiator extends Agent {
 									order.setReplyWith("order" + System.currentTimeMillis());
 									myAgent.send(order);
 									
-									System.out.println("[" + getAID().getLocalName() + "] acceptProposal ("
-											+ proposalList.get(i).source.getLocalName() + ") '"
-											+ proposalList.get(i).product + "' $ " + proposalList.get(i).price);
+									//System.out.println("[" + getAID().getLocalName() + "] acceptProposal ("
+									//		+ proposalList.get(i).source.getLocalName() + ") '"
+									//		+ proposalList.get(i).product + "' $ " + proposalList.get(i).price);
 
 									// Prepare the template to get the purchase order reply - but it is not being used!!!
 									mt = MessageTemplate.and(MessageTemplate.MatchConversationId("fruit-trade"),
@@ -204,9 +197,9 @@ public class Initiator extends Agent {
 									order.setReplyWith("order" + System.currentTimeMillis());
 									myAgent.send(order);
 									
-									System.out.println("[" + getAID().getLocalName() + "] rejectProposal ("
-											+ proposalList.get(i).source.getLocalName() + ") '"
-											+ proposalList.get(i).product + "' $ " + proposalList.get(i).price);
+									//System.out.println("[" + getAID().getLocalName() + "] rejectProposal ("
+									//		+ proposalList.get(i).source.getLocalName() + ") '"
+									//		+ proposalList.get(i).product + "' $ " + proposalList.get(i).price);
 								}
 							}
 						}
@@ -268,13 +261,18 @@ public class Initiator extends Agent {
 					msg.setOntology(jmo.getName());
 					try {
 					    myAgent.doSuspend();
+						System.out.println(myAgent.getName()+" finished!");
+
 						getContentManager().fillContent(msg, new Action(getAID(), new ShutdownPlatform()));
 					    send(msg);
 					}
 					catch (Exception e) {}
 				
 				} else {
-					if (activeBehaviour == 0) myAgent.doSuspend();
+					if (activeBehaviour == 0) {
+						System.out.println(myAgent.getName()+" finished!");
+						myAgent.doSuspend();
+					}
 					block();
 				}
 

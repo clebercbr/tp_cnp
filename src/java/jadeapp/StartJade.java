@@ -6,7 +6,6 @@ import jade.core.Runtime;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 
-
 public class StartJade {
 
     ContainerController cc;
@@ -20,13 +19,13 @@ public class StartJade {
     void startContainer() {
         ProfileImpl p = new ProfileImpl();
         p.setParameter(Profile.MAIN_HOST, "localhost");
-        p.setParameter(Profile.GUI, "true");
+        p.setParameter(Profile.GUI, "false");
         
         cc = Runtime.instance().createMainContainer(p);
     }
     
     void createAgents() throws Exception {
-    	int nI = 2, nP = 2, nR = 1;
+    	int nI = 50, nP = 50, nR = 25;
     	//Participants must be created firstly since they must be waiting for a cfp
         for (int i=1; i<=nP; i++) {
             AgentController ac = cc.createNewAgent("p"+i, "jadeagents.Participant", new Object[] { i });
