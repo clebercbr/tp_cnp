@@ -15,10 +15,10 @@ MAS tp_cnp {
 	infrastructure: Centralised
 
 	agents:
-		i initiator [beliefs="expectedResponses(50)"] #200;
-		p participant #50;
-		r rejector #25;
-		c controller [beliefs="expectedDones(200)"] #1;
+		i initiator [beliefs="expectedResponses(2)"] #2;
+		p participant #2;
+		r rejector #1;
+		c controller [beliefs="expectedDones(2)"] #1;
 
 	aslSourcePath:
 		"src/asl";
