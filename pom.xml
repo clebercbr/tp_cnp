@@ -25,6 +25,7 @@
 	<build>
 		<defaultGoal>install</defaultGoal>
 		<sourceDirectory>${basedir}/src/java/jadeapp</sourceDirectory>
+		<directory>${basedir}/target</directory>
 		<outputDirectory>${basedir}/target/classes</outputDirectory>
 		<resources>
 			<resource><directory>${basedir}/src/java/jadeagents/</directory>
